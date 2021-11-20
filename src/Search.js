@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Search.css';
 import SearchIcon from '@material-ui/icons/Search';
 import MicIcon from '@material-ui/icons/Mic';
@@ -6,12 +6,18 @@ import { Button } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStateValue } from './StateProvider';
 import { actionTypes } from './reducer';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 function Search({ hideButtons = false }) {
 
     const [{}, dispatch] = useStateValue();
     const [input, setInput] = useState('');
     const history = useHistory();
+    const {
+      transcript,
+      listening,
+      resetTranscript,
+    } = useSpeechRecognition();
 
     const search = (e) => {
         e.preventDefault();
@@ -26,14 +32,23 @@ function Search({ hideButtons = false }) {
         history.push('/search')
     };
 
-
+    useEffect(()=>{
+    setInput(transcript);
+    console.log(transcript);
+    }, [transcript]);
     return (
         <form className='search'>
             
             <div className='search_input'>
                 <SearchIcon className='search_inputIcon' />
                 <input value={input} onChange={e => setInput(e.target.value)} />
-                <MicIcon />
+                <MicIcon
+                  color={listening ? "secondary" : "primary"}
+                  onTouchStart={SpeechRecognition.startListening}
+                  onTouchEnd={SpeechRecognition.stopListening}
+                  onMouseDown={SpeechRecognition.startListening}
+                  onMouseUp={SpeechRecognition.stopListening}
+                />
             </div>
 
             {!hideButtons ? (
